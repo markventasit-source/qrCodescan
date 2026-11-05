@@ -1,0 +1,34 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model QrCode {
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  slug           String    @unique
+  targetUrl      String
+  totalScans     Int       @default(0)
+  uniqueVisitors Int       @default(0)
+  lastScannedAt  DateTime?
+  createdAt      DateTime  @default(now())
+  scans          Scan[]
+}
+
+model Scan {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  qrCodeId  String   @db.ObjectId
+  qrCode    QrCode   @relation(fields: [qrCodeId], references: [id], onDelete: Cascade)
+  visitorId String
+  device    String
+  userAgent String?
+  referer   String?
+  createdAt DateTime @default(now())
+
+  @@index([qrCodeId, createdAt])
+  @@index([qrCodeId, visitorId])
+}
