@@ -1,3 +1,22 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:focus-visible {
+  outline: 2px solid #0b5d4b;
+  outline-offset: 2px;
+}
+
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes drawer-in { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes pop-in { from { transform: translateY(8px) scale(0.98); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes toast-in { from { transform: translate(-50%, 8px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+
+.fade-in { animation: fade-in 0.15s ease-out; }
+.drawer-in { animation: drawer-in 0.2s ease-out; }
+.pop-in { animation: pop-in 0.18s ease-out; }
+.toast-in { animation: toast-in 0.18s ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-in, .drawer-in, .pop-in, .toast-in, .animate-pulse, .animate-spin { animation: none !important; }
+}
