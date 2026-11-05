@@ -1,0 +1,9 @@
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Disallow QR redirect routes from indexing
+Disallow: /q/
+
+# Sitemap location
+Sitemap: https://yourdomain.com/sitemap.xml
