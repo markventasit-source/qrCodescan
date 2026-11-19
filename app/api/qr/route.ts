@@ -5,8 +5,19 @@ import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const items = await prisma.qrCode.findMany({ orderBy: { createdAt: "desc" } });
-  return NextResponse.json({ items });
+  try {
+    const items = await prisma.qrCode.findMany({ orderBy: { createdAt: "desc" } });
+    return NextResponse.json({ items });
+  } catch (error) {
+    console.error("GET /api/qr database error:", error);
+    return NextResponse.json(
+      {
+        error: "Database error",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(req: NextRequest) {
