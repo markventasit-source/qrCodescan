@@ -2,6 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 /* ───────── types & helpers ───────── */
 
@@ -248,12 +255,20 @@ function QrForm({
           <span className="block text-sm font-medium">URL parameters</span>
           {params.map((p, i) => (
             <div key={i} className="flex items-center gap-2">
-              <input
+              <Select
                 value={p.key}
-                onChange={(e) => updateParam(i, "key", e.target.value)}
-                placeholder="key"
-                className="w-[38%] rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
-              />
+                onValueChange={(val) => updateParam(i, "key", val)}
+              >
+                <SelectTrigger className="w-[42%] rounded-lg border-line bg-white text-sm focus:border-brand focus:ring-2 focus:ring-brand/20">
+                  <SelectValue placeholder="key" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="utm_source">utm_source</SelectItem>
+                  <SelectItem value="utm_medium">utm_medium</SelectItem>
+                  <SelectItem value="utm_campaign">utm_campaign</SelectItem>
+                  <SelectItem value="utm_content">utm_content</SelectItem>
+                </SelectContent>
+              </Select>
               <span className="shrink-0 text-xs text-muted">=</span>
               <input
                 value={p.value}
