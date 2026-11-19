@@ -148,6 +148,22 @@ const btnPrimary =
 const btnGhost =
   "inline-flex items-center justify-center gap-2 rounded-lg border border-line bg-white px-3.5 py-2.5 text-sm font-medium text-ink transition hover:bg-paper";
 
+type Param = { key: string; value: string };
+
+function buildUrl(base: string, params: Param[]): string {
+  const filled = params.filter((p) => p.key.trim());
+  if (!filled.length) return base;
+  try {
+    const u = new URL(base);
+    filled.forEach((p) => u.searchParams.set(p.key.trim(), p.value));
+    return u.toString();
+  } catch {
+    // base URL isn't parseable yet — append manually
+    const qs = filled.map((p) => `${encodeURIComponent(p.key.trim())}=${encodeURIComponent(p.value)}`).join("&");
+    return base.includes("?") ? `${base}&${qs}` : `${base}?${qs}`;
+  }
+}
+
 function QrForm({
   initial,
   submitLabel,
@@ -161,8 +177,21 @@ function QrForm({
 }) {
   const [name, setName] = useState(initial?.name ?? "");
   const [url, setUrl] = useState(initial?.url ?? "");
+  const [params, setParams] = useState<Param[]>([]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
+  function addParam() {
+    setParams((prev) => [...prev, { key: "", value: "" }]);
+  }
+
+  function updateParam(index: number, field: "key" | "value", val: string) {
+    setParams((prev) => prev.map((p, i) => (i === index ? { ...p, [field]: val } : p)));
+  }
+
+  function removeParam(index: number) {
+    setParams((prev) => prev.filter((_, i) => i !== index));
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -170,13 +199,22 @@ function QrForm({
     setBusy(true);
     const clean = url.trim();
     const full = /^https?:\/\//i.test(clean) ? clean : `https://${clean}`;
-    const err = await onSubmit(name.trim(), full);
+    const finalUrl = buildUrl(full, params);
+    const err = await onSubmit(name.trim(), finalUrl);
     setBusy(false);
     if (err) setError(err);
   }
 
   const input =
     "w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20";
+
+  const previewUrl = (() => {
+    const clean = url.trim();
+    if (!clean) return null;
+    const full = /^https?:\/\//i.test(clean) ? clean : `https://${clean}`;
+    const result = buildUrl(full, params);
+    return result !== full ? result : null;
+  })();
 
   return (
     <form onSubmit={submit} className="space-y-4">
@@ -204,6 +242,53 @@ function QrForm({
         />
         <span className="mt-1 block text-xs text-muted">People land here after they scan.</span>
       </label>
+
+      {params.length > 0 && (
+        <div className="space-y-2">
+          <span className="block text-sm font-medium">URL parameters</span>
+          {params.map((p, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <input
+                value={p.key}
+                onChange={(e) => updateParam(i, "key", e.target.value)}
+                placeholder="key"
+                className="w-[38%] rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
+              />
+              <span className="shrink-0 text-xs text-muted">=</span>
+              <input
+                value={p.value}
+                onChange={(e) => updateParam(i, "value", e.target.value)}
+                placeholder="value"
+                className="min-w-0 flex-1 rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
+              />
+              <button
+                type="button"
+                onClick={() => removeParam(i)}
+                aria-label="Remove parameter"
+                className="shrink-0 rounded-md p-1.5 text-muted hover:bg-danger/10 hover:text-danger"
+              >
+                <Icon name="x" className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {previewUrl && (
+        <p className="break-all rounded-lg bg-paper px-3 py-2 text-xs text-muted">
+          <span className="font-medium text-ink">Final URL: </span>{previewUrl}
+        </p>
+      )}
+
+      <button
+        type="button"
+        onClick={addParam}
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-brand hover:underline"
+      >
+        <Icon name="plus" className="h-3.5 w-3.5" />
+        Add parameter
+      </button>
+
       {error && (
         <p role="alert" className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger">
           {error}
