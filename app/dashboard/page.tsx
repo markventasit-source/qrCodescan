@@ -259,7 +259,7 @@ function QrForm({
                 value={p.key}
                 onValueChange={(val) => updateParam(i, "key", val)}
               >
-                <SelectTrigger className="w-[42%] rounded-lg border-line bg-white text-sm focus:border-brand focus:ring-2 focus:ring-brand/20">
+                <SelectTrigger className="w-[42%]">
                   <SelectValue placeholder="key" />
                 </SelectTrigger>
                 <SelectContent>
